@@ -506,6 +506,10 @@
             padding: 4px;
         }
 
+        .sync-toggle-three {
+            gap: 2px;
+        }
+
         .sync-toggle-btn {
             border: none;
             background: transparent;
@@ -516,6 +520,11 @@
             font-size: 14px;
             cursor: pointer;
             transition: var(--transition);
+        }
+
+        .sync-toggle-three .sync-toggle-btn {
+            padding: 8px 12px;
+            font-size: 13px;
         }
 
         .sync-toggle-btn.active {
@@ -812,6 +821,10 @@
             background: linear-gradient(90deg, var(--primary), var(--accent));
         }
 
+        .footer h3, .footer h4 {
+            color: #ffffff;
+        }
+
         .footer-links {
             list-style: none;
             padding: 0;
@@ -988,25 +1001,13 @@
                 <div class="col-lg-12">
                     <div class="fade-up">
                         <h1>Epipolar Geometry Improves<br>Video Generation Models</h1>
-                        <div class="authors">
-                            Orest Kupyn<sup>1</sup>, Fabian Manhardt<sup>2</sup>, Federico Tombari<sup>2, 3</sup>, Christian Rupprecht<sup>1</sup>
-                        </div>
-                        <div class="institute">
-                            <sup>1</sup>University of Oxford &nbsp;&nbsp; <sup>2</sup>Google &nbsp;&nbsp; <sup>3</sup>TU Munich
-                        </div>
-                        <div class="institute" style="margin-top: 0.5rem; font-weight: 500;">
-                            arXiv Preprint
-                        </div>
+                        <div class="authors">Orest Kupyn<sup>1</sup> &middot; Théo Uscidda<sup>2,3</sup> &middot; Marta Tintore Gazulla<sup>2</sup><br>Fabian Manhardt<sup>2</sup> &middot; Federico Tombari<sup>2,4</sup> &middot; Christian Rupprecht<sup>1</sup></div>
+                        <div class="institute"><sup>1</sup> University of Oxford &nbsp; <sup>2</sup> Google Research<br><sup>3</sup> CREST-ENSAE, Institut Polytechnique de Paris &nbsp; <sup>4</sup> Technical University of Munich<br><strong>Accepted to TMLR</strong></div>
                         <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
-                            <a href="https://arxiv.org/abs/2510.21615" class="btn btn-primary" target="_blank">
-                                <i class="fas fa-file-pdf"></i> arXiv Paper
-                            </a>
-                            <a href="#results" class="btn btn-results">
-                                <i class="fas fa-play-circle"></i>View Results
-                            </a>
-                            <a href="https://github.com/KupynOrest/epipolar-dpo" class="btn btn-outline" target="_blank">
-                                <i class="fab fa-github"></i> Code
-                            </a>
+                            <a href="https://openreview.net/forum?id=xKvQakeoBP" class="btn btn-primary"><i class="fas fa-file-alt"></i> OpenReview</a>
+                            <a href="https://arxiv.org/abs/2510.21615" class="btn btn-outline"><i class="fas fa-file-pdf"></i> arXiv</a>
+                            <a href="https://github.com/KupynOrest/epipolar-dpo" class="btn btn-outline"><i class="fab fa-github"></i> Code</a>
+                            <a href="#results" class="btn btn-results"><i class="fas fa-play-circle"></i> View Results</a>
                         </div>
                     </div>
                 </div>
@@ -1043,6 +1044,8 @@
                     <li><a href="#method">Method</a></li>
                     <li><a href="#results">Results</a></li>
                     <li><a href="#evaluation">Evaluation</a></li>
+                    <li><a href="#sft-comparison">vs SFT</a></li>
+                    <li><a href="#failure-cases">Limitations</a></li>
                     <li><a href="#cite">Cite</a></li>
                     <li><a href="#results" class="btn btn-results btn-sm">
                         <i class="fas fa-play-circle"></i> View Results
@@ -1060,11 +1063,7 @@
                     <div class="fade-up">
                         <h2>Abstract</h2>
                         <div class="abstract">
-                            <p>Video generation models have progressed tremendously through large latent diffusion transformers trained with rectified flow techniques. Yet, despite these advances, these models still struggle with geometric inconsistencies, unstable motion, and visual artifacts that break the illusion of realistic 3D scenes.</p>
-                            
-                            <p>3D-consistent video generation could significantly impact numerous downstream applications in generation and reconstruction tasks. This work explores how simple epipolar geometry constraints can improve modern video diffusion models trained on internet-scale datasets. Despite their massive training data, these models often fail to capture the fundamental geometric principles underlying all visual content.</p>
-                            
-                            <p>While traditional computer vision methods are often non-differentiable and computationally expensive, they provide reliable, mathematically grounded signals for 3D consistency evaluation. We demonstrate that aligning diffusion models through a preference-based optimization framework using pairwise epipolar geometry constraints yields videos with superior visual quality, enhanced 3D consistency, and significantly improved motion stability.</p>
+                            <p>Video generation models have advanced significantly through the latent diffusion transformers trained with rectified flow techniques. Yet these models still struggle with geometric inconsistencies, unstable motion, and visual artifacts that break the illusion of realistic 3D scenes. 3D-consistent video generation could significantly impact numerous downstream applications in generation and reconstruction tasks. We explore how epipolar geometry constraints improve modern video diffusion models. Despite using massive training data, these models fail to capture fundamental geometric principles. We align diffusion models using pairwise epipolar geometry constraints via preference-based optimization, directly addressing unstable trajectories and geometric artifacts through mathematically principled geometric enforcement. Our approach efficiently enforces geometric principles without requiring end-to-end differentiability. Evaluation demonstrates that classical geometric constraints provide more reliable preference signals than the video-quality and geometry metrics based on foundational models. We construct preferences from static scenes with camera motion, where the epipolar metric is most reliable, while the aligned model generalizes to dynamic scenes. By bridging data-driven learning with classical computer vision, we reduce epipolar error by 31% and improve human-rated consistency from 54% to 72% without compromising visual quality.</p>
                         </div>
                     </div>
                 </div>
@@ -1570,6 +1569,283 @@
         </div>
     </section>
 
+    <!-- SFT Comparison Section -->
+    <section class="section" id="sft-comparison">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="fade-up">
+                        <h2>Comparison with Direct Fine-Tuning</h2>
+                        <p>We compare our epipolar-aware alignment approach to standard supervised fine-tuning (SFT) on multi-view static datasets. While directly fine-tuning on perfectly 3D-consistent static scenes might seem like a viable alternative, it leads to overfitting to dataset-specific characteristics such as narrow camera trajectory distributions and scene types, ultimately hurting generalization to diverse dynamic content.</p>
+                    </div>
+                    
+                    <!-- Three-way Comparison Grid -->
+                    <div class="row mt-4">
+                        <!-- Comparison Card 1 -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="result-card fade-up delay-1">
+                                <div class="sync-video-container">
+                                    <div class="video-pane active" data-video="baseline">
+                                        <video class="sync-video" data-sync-group="sft-1">
+                                            <source src="videos/sft/baseline_1.mp4" type="video/mp4">
+                                        </video>
+                                    </div>
+                                    <div class="video-pane" data-video="sft">
+                                        <video class="sync-video" data-sync-group="sft-1">
+                                            <source src="videos/sft/sft_1.mp4" type="video/mp4">
+                                        </video>
+                                    </div>
+                                    <div class="video-pane" data-video="ours">
+                                        <video class="sync-video" data-sync-group="sft-1">
+                                            <source src="videos/sft/ours_1.mp4" type="video/mp4">
+                                        </video>
+                                    </div>
+                                </div>
+                                <div class="result-info">
+                                    <div class="result-title">
+                                        <i class="fas fa-couch"></i>
+                                        LA Street Scene
+                                    </div>
+                                    <div class="result-description">The model finetuned directly on multi-view data overfits to specific camera trajectories. When combined with significant dynamic content, it produces additional artifacts and fails to preserve object geometry.</div>
+                                    <div class="sync-video-controls">
+                                        <button class="sync-play-btn" data-sync-group="sft-1">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <div class="sync-toggle sync-toggle-three">
+                                            <button class="sync-toggle-btn active" data-sync-group="sft-1" data-video="baseline">Baseline</button>
+                                            <button class="sync-toggle-btn" data-sync-group="sft-1" data-video="sft">SFT</button>
+                                            <button class="sync-toggle-btn" data-sync-group="sft-1" data-video="ours">Ours</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Comparison Card 2 -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="result-card fade-up delay-2">
+                                <div class="sync-video-container">
+                                    <div class="video-pane active" data-video="baseline">
+                                        <video class="sync-video" data-sync-group="sft-2">
+                                            <source src="videos/sft/baseline_2.mp4" type="video/mp4">
+                                        </video>
+                                    </div>
+                                    <div class="video-pane" data-video="sft">
+                                        <video class="sync-video" data-sync-group="sft-2">
+                                            <source src="videos/sft/sft_2.mp4" type="video/mp4">
+                                        </video>
+                                    </div>
+                                    <div class="video-pane" data-video="ours">
+                                        <video class="sync-video" data-sync-group="sft-2">
+                                            <source src="videos/sft/ours_2.mp4" type="video/mp4">
+                                        </video>
+                                    </div>
+                                </div>
+                                <div class="result-info">
+                                    <div class="result-title">
+                                        <i class="fas fa-store-alt"></i>
+                                        Toy Street Scene
+                                    </div>
+                                    <div class="result-description">
+                                        The SFT model degrades the baseline performance in some cases. Notice, the camera trajectory resembles average camera trajectory in the training data which leads to additional artifacts on the end of the video.
+                                    </div>
+                                    <div class="sync-video-controls">
+                                        <button class="sync-play-btn" data-sync-group="sft-2">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <div class="sync-toggle sync-toggle-three">
+                                            <button class="sync-toggle-btn active" data-sync-group="sft-2" data-video="baseline">Baseline</button>
+                                            <button class="sync-toggle-btn" data-sync-group="sft-2" data-video="sft">SFT</button>
+                                            <button class="sync-toggle-btn" data-sync-group="sft-2" data-video="ours">Ours</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Failure Cases Section -->
+    <section class="section section-alt" id="failure-cases">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="fade-up">
+                        <h2>Limitations and Failure Cases</h2>
+                        <p>We present failure cases to provide transparency about the limitations of our approach and areas for future improvement.</p>
+                    </div>
+                    
+                    <!-- Part 1: Data Mining Pipeline Failures -->
+                    <div class="fade-up delay-1">
+                        <h3>Data Mining Pipeline</h3>
+                        <p>Our reward model relies on feature matching and epipolar geometry scoring. However, this pipeline can produce false positives (assigning low error to geometrically inconsistent videos) and false negatives (high error to consistent ones) when scenes have repetitive textures, lack distinctive features, or contain significant motion blur.</p>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <!-- High Score False Positive -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="result-card fade-up delay-1">
+                                <div class="sync-video-container">
+                                    <video class="sync-video" loop>
+                                        <source src="videos/failcases/metric_1.mp4" type="video/mp4">
+                                    </video>
+                                </div>
+                                <div class="result-info">
+                                    <div class="result-title">
+                                        <i class="fas fa-exclamation-triangle" style="color: #f97316;"></i>
+                                        False Positive: Low Error
+                                    </div>
+                                    <div class="result-description">This video received a low average error despite significant geometric artifacts in the first part of the video. Near static second part of the video leads to overally low error.</div>
+                                    <div class="sync-video-controls">
+                                        <button class="sync-play-btn" data-video-target="failure-high">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Low Score False Negative -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="result-card fade-up delay-2">
+                                <div class="sync-video-container">
+                                    <video class="sync-video" loop>
+                                        <source src="videos/failcases/metric_2.mp4" type="video/mp4">
+                                    </video>
+                                </div>
+                                <div class="result-info">
+                                    <div class="result-title">
+                                        <i class="fas fa-exclamation-triangle" style="color: #f97316;"></i>
+                                        False Negative: High Error
+                                    </div>
+                                    <div class="result-description">This geometrically consistent video received a low score due to repetitive textures affecting feature tracking.</div>
+                                    <div class="sync-video-controls">
+                                        <button class="sync-play-btn" data-video-target="failure-low">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Part 2: Generation Failure Cases -->
+                    <div class="fade-up delay-1 mt-5">
+                        <h3>Generation Failures</h3>
+                        <p>While our method significantly improves geometric consistency, it does not solve all failure modes. Complex dynamic scenes with extreme camera motion or highly ambiguous content remain challenging for both the baseline and our approach.</p>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <!-- Generation Failure 1 -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="result-card fade-up delay-1">
+                                <div class="sync-video-container">
+                                    <div class="video-pane active" data-video="baseline">
+                                        <video class="sync-video" data-sync-group="fail-1">
+                                            <source src="videos/failcases/baseline_1.mp4" type="video/mp4">
+                                        </video>
+                                    </div>
+                                    <div class="video-pane" data-video="ours">
+                                        <video class="sync-video" data-sync-group="fail-1">
+                                            <source src="videos/failcases/ours_1.mp4" type="video/mp4">
+                                        </video>
+                                    </div>
+                                </div>
+                                <div class="result-info">
+                                    <div class="result-title">
+                                        <i class="fas fa-times-circle" style="color: #dc2626;"></i>
+                                        Near Static Outdoor Scenes
+                                    </div>
+                                    <div class="result-description">The aligned model occasionally generate static frames for near static drone videos of outdoor scenes.</div>
+                                    <div class="sync-video-controls">
+                                        <button class="sync-play-btn" data-sync-group="fail-1">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <div class="sync-toggle">
+                                            <button class="sync-toggle-btn active" data-sync-group="fail-1" data-video="baseline">Baseline</button>
+                                            <button class="sync-toggle-btn" data-sync-group="fail-1" data-video="ours">Ours</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Generation Failure 2 -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="result-card fade-up delay-2">
+                                <div class="sync-video-container">
+                                    <div class="video-pane active" data-video="baseline">
+                                        <video class="sync-video" data-sync-group="fail-2">
+                                            <source src="videos/failcases/baseline_2.mp4" type="video/mp4">
+                                        </video>
+                                    </div>
+                                    <div class="video-pane" data-video="ours">
+                                        <video class="sync-video" data-sync-group="fail-2">
+                                            <source src="videos/failcases/ours_2.mp4" type="video/mp4">
+                                        </video>
+                                    </div>
+                                </div>
+                                <div class="result-info">
+                                    <div class="result-title">
+                                        <i class="fas fa-times-circle" style="color: #dc2626;"></i>
+                                        Challenging Dynamic Scenes
+                                    </div>
+                                    <div class="result-description">Extreme illuminations, dynamics and out of distribution content remain challenging for both baseline and our approach.</div>
+                                    <div class="sync-video-controls">
+                                        <button class="sync-play-btn" data-sync-group="fail-2">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <div class="sync-toggle">
+                                            <button class="sync-toggle-btn active" data-sync-group="fail-2" data-video="baseline">Baseline</button>
+                                            <button class="sync-toggle-btn" data-sync-group="fail-2" data-video="ours">Ours</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Generation Failure 3 -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="result-card fade-up delay-3">
+                                <div class="sync-video-container">
+                                    <div class="video-pane active" data-video="baseline">
+                                        <video class="sync-video" data-sync-group="fail-3">
+                                            <source src="videos/failcases/baseline_3.mp4" type="video/mp4">
+                                        </video>
+                                    </div>
+                                    <div class="video-pane" data-video="ours">
+                                        <video class="sync-video" data-sync-group="fail-3">
+                                            <source src="videos/failcases/ours_3.mp4" type="video/mp4">
+                                        </video>
+                                    </div>
+                                </div>
+                                <div class="result-info">
+                                    <div class="result-title">
+                                        <i class="fas fa-times-circle" style="color: #dc2626;"></i>
+                                        Complex Interactions
+                                    </div>
+                                    <div class="result-description">Complex interactions between objects are not addressed by epipolar alignment.</div>
+                                    <div class="sync-video-controls">
+                                        <button class="sync-play-btn" data-sync-group="fail-3">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <div class="sync-toggle">
+                                            <button class="sync-toggle-btn active" data-sync-group="fail-3" data-video="baseline">Baseline</button>
+                                            <button class="sync-toggle-btn" data-sync-group="fail-3" data-video="ours">Ours</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Conclusion Section -->
     <section class="section" id="conclusion">
         <div class="container">
@@ -1593,18 +1869,14 @@
                 <div class="col-lg-10 mx-auto">
                     <div class="fade-up">
                         <h2>Citation</h2>
-                        <div class="citation">
-                            <button class="copy-btn" id="copy-citation">
-                                <i class="fas fa-copy"></i>
-                            </button>
-@article{kupyn2025epipolar,
-    title={Epipolar Geometry Improves Video Generation Models},
-    author={Kupyn, Orest and Manhardt, Fabian and Tombari, Federico and Rupprecht, Christian},
-    journal={arXiv preprint arXiv:2510.21615},
-    year={2025},
-    url={https://arxiv.org/abs/2510.21615}
-}
-                        </div>
+                        <p>Accepted to TMLR; the citation can be updated with publication details after the final version appears.</p>
+                        <div class="citation"><button class="copy-btn" id="copy-citation" aria-label="Copy citation"><i class="fas fa-copy" aria-hidden="true"></i></button><code id="citation-text">@misc{kupyn2026epipolar,
+  title={Epipolar Geometry Improves Video Generation Models},
+  author={Kupyn, Orest and Uscidda, Théo and Tintore Gazulla, Marta and Manhardt, Fabian and Tombari, Federico and Rupprecht, Christian},
+  year={2026},
+  note={Transactions on Machine Learning Research},
+  url={https://openreview.net/forum?id=xKvQakeoBP}
+}</code></div>
                     </div>
                 </div>
             </div>
@@ -1617,30 +1889,18 @@
             <div class="row">
                 <div class="col-md-8">
                     <h3>Epipolar Geometry Improves Video Generation Models</h3>
-                    <p>© 2025 Orest Kupyn, Fabian Manhardt, Federico Tombari, Christian Rupprecht<br>arXiv Preprint</p>
-                    <div class="social-links">
-                        <a href="https://epipolar-dpo.github.io" aria-label="Project Page">
-                            <i class="fas fa-globe"></i>
-                        </a>
-                        <a href="https://github.com/KupynOrest/epipolar-dpo" aria-label="GitHub" target="_blank">
-                            <i class="fab fa-github"></i>
-                        </a>
-                        <a href="https://arxiv.org/abs/2510.21615" aria-label="arXiv Paper" target="_blank">
-                            <i class="fas fa-file-pdf"></i>
-                        </a>
-                    </div>
+                    <p>Orest Kupyn, Théo Uscidda, Marta Tintore Gazulla, Fabian Manhardt, Federico Tombari, and Christian Rupprecht<br>Accepted to TMLR</p>
                 </div>
                 <div class="col-md-4">
                     <h4>Resources</h4>
                     <ul class="footer-links">
+                        <li><a href="https://openreview.net/forum?id=xKvQakeoBP"><i class="fas fa-file-alt"></i> OpenReview</a></li>
+                        <li><a href="https://arxiv.org/abs/2510.21615"><i class="fas fa-file-pdf"></i> arXiv</a></li>
+                        <li><a href="https://github.com/KupynOrest/epipolar-dpo"><i class="fab fa-github"></i> Code</a></li>
+                        <li><a href="#cite"><i class="fas fa-quote-right"></i> Citation</a></li>
                         <li>
                             <a href="#results">
                                 <i class="fas fa-play-circle"></i> Video Results
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#cite">
-                                <i class="fas fa-quote-right"></i> Citation
                             </a>
                         </li>
                     </ul>
@@ -1708,8 +1968,33 @@
             const $video = $(video);
             const container = $video.closest(".result-card, .video-comparison, .video-comparison-hero");
             const currentPane = $video.closest(".video-pane");
-            const isBaseline = currentPane.data("video") === "baseline";
-            const nextVideoType = isBaseline ? "ours" : "baseline";
+            
+            // If this is a single video (no panes), just loop it
+            if (currentPane.length === 0) {
+                video.currentTime = 0;
+                playVideoSafely(video);
+                return;
+            }
+            
+            const currentVideoType = currentPane.data("video");
+            
+            // Determine next video type based on available panes
+            let nextVideoType;
+            const hasSFT = container.find('.video-pane[data-video="sft"]').length > 0;
+            
+            if (hasSFT) {
+                // Three-way toggle: baseline -> sft -> ours -> baseline
+                if (currentVideoType === "baseline") {
+                    nextVideoType = "sft";
+                } else if (currentVideoType === "sft") {
+                    nextVideoType = "ours";
+                } else {
+                    nextVideoType = "baseline";
+                }
+            } else {
+                // Two-way toggle: baseline -> ours -> baseline
+                nextVideoType = currentVideoType === "baseline" ? "ours" : "baseline";
+            }
             
             // Find next video and toggle
             const nextPane = container.find(`.video-pane[data-video="${nextVideoType}"]`);
@@ -1758,8 +2043,18 @@
             const btn = $(this);
             const icon = btn.find("i");
             const container = btn.closest(".result-card");
+            
+            // Check if this is a video with panes (baseline/ours) or a single video
             const activePane = container.find(".video-pane.active");
-            const activeVideo = activePane.find("video")[0];
+            let activeVideo;
+            
+            if (activePane.length > 0) {
+                // Multi-video with toggle
+                activeVideo = activePane.find("video")[0];
+            } else {
+                // Single video (failure cases without panes)
+                activeVideo = container.find(".sync-video-container video")[0];
+            }
             
             if (activeVideo) {
                 if (activeVideo.paused) {
@@ -1844,8 +2139,14 @@
             if (group) {
                 $(`.sync-play-btn[data-sync-group="${group}"] i`).removeClass("fa-play").addClass("fa-pause");
             }
+            // Check if this is part of main video comparison
             if ($(this).closest(".video-comparison").length) {
                 $("#main-play-btn i").removeClass("fa-play").addClass("fa-pause");
+            }
+            // Handle single videos in failure cases section
+            const container = $(this).closest(".result-card");
+            if (container.length && !$(this).closest(".video-pane").length) {
+                container.find(".sync-play-btn i").removeClass("fa-play").addClass("fa-pause");
             }
         });
     
@@ -1857,11 +2158,16 @@
             if ($(this).closest(".video-comparison").length) {
                 $("#main-play-btn i").removeClass("fa-pause").addClass("fa-play");
             }
+            // Handle single videos in failure cases section
+            const container = $(this).closest(".result-card");
+            if (container.length && !$(this).closest(".video-pane").length) {
+                container.find(".sync-play-btn i").removeClass("fa-pause").addClass("fa-play");
+            }
         });
     
         // Copy citation
         $("#copy-citation").on("click", function() {
-            const citation = $(".citation").text().trim();
+            const citation = $("#citation-text").text().trim();
             navigator.clipboard.writeText(citation).then(() => {
                 const btn = $(this);
                 const icon = btn.find("i");
